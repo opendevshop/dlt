@@ -26,7 +26,9 @@ $classLoader = require $autoloaderPath;
 $argv = $_SERVER['argv'];
 $appName = "Dlt";
 $appVersion = trim(file_get_contents(__DIR__ . '/VERSION'));
-$commandClasses = [ \Dlt\Cli\ExampleCommands::class ];
+$commandClasses = [
+  \Dlt\Cli\DevShopCommands::class
+];
 $selfUpdateRepository = 'opendevshop/dlt';
 $configPrefix = 'DLT';
 $configFilePath = getenv($configPrefix . '_CONFIG') ?: getenv('HOME') . '/.dlt/dlt.yml';
