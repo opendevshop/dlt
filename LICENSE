@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2018 Greg Anderson
+Copyright (c) 2018 Jon Pugh
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -22,6 +22,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 DEPENDENCY LICENSES:
 
 Name                    Version  License  
-symfony/filesystem      v3.4.11  MIT      
-symfony/finder          v3.4.11  MIT      
+symfony/filesystem      v3.4.13  MIT      
+symfony/finder          v3.4.13  MIT      
 symfony/polyfill-ctype  v1.8.0   MIT      
