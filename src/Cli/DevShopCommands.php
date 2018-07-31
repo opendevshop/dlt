@@ -37,6 +37,9 @@ class DevShopCommands extends \Robo\Tasks
       ->mkdir($projects_path)
       ->run();
 
+    $user_uid = trim(shell_exec('id -u'));
+    $user_gid = trim(shell_exec('id -g'));
+
     // Write the docker-compose.yml file.
     $yml = <<<YML
 version: '2'
@@ -47,7 +50,14 @@ volumes:
 
 services:
   devshop:
-    image: devshop/server
+    image: devshop/server:local
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+      args:
+        PROVISION_USER_NAME: provision
+        PROVISION_USER_UID: $user_uid
+        PROVISION_WEB_UID: $user_gid
     ports:
       - "2222:22"
       - 80:80
@@ -61,6 +71,22 @@ services:
       - $projects_path:/var/aegir/projects
 YML;
       file_put_contents($this->dir . DIRECTORY_SEPARATOR . 'docker-compose.yml', $yml);
+
+      $dockerfile = <<<DOCKERFILE
+FROM devshop/server:latest
+USER root
+ARG PROVISION_USER_UID=12345
+ENV PROVISION_USER_UID \${PROVISION_USER_UID:-$user_uid}
+ARG PROVISION_WEB_UID=54321
+ENV PROVISION_WEB_UID \${PROVISION_WEB_UID:-$user_gid}
+ENV PROVISION_USER_NAME aegir
+RUN echo "𝙋𝙍𝙊𝙑𝙄𝙎𝙄𝙊𝙉 Dockerfile.user ║ Running /usr/local/bin/set-user-ids \$PROVISION_USER_NAME \$PROVISION_USER_UID \$PROVISION_WEB_UID"
+RUN /usr/local/bin/set-user-ids \$PROVISION_USER_NAME \$PROVISION_USER_UID \$PROVISION_WEB_UID
+USER \$PROVISION_USER_NAME
+
+DOCKERFILE;
+    file_put_contents($this->dir . DIRECTORY_SEPARATOR . 'Dockerfile.local', $dockerfile);
+
 
       /**
        * @TODO:
@@ -79,7 +105,7 @@ YML;
    * @command docker-compose:up
    */
   public function dockerComposeUp() {
-    $this->_exec('docker-compose up -d; docker-compose logs -f');
+    $this->_exec('docker-compose build --no-cache && docker-compose up -d && docker-compose logs -f');
   }
 
   /**
