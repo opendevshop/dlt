@@ -24,12 +24,12 @@ $classLoader = require $autoloaderPath;
 
 // Customization variables
 $argv = $_SERVER['argv'];
-$appName = "Dlt";
+$appName = \Dlt\Application::NAME;
 $appVersion = trim(file_get_contents(__DIR__ . '/VERSION'));
 $commandClasses = [
   \Dlt\Cli\DevShopCommands::class
 ];
-$selfUpdateRepository = 'opendevshop/dlt';
+$selfUpdateRepository = \Dlt\Application::NAME;
 $configPrefix = 'DLT';
 $configFilePath = getenv($configPrefix . '_CONFIG') ?: getenv('HOME') . '/.dlt/dlt.yml';
 
