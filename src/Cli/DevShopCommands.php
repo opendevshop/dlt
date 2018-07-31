@@ -2,33 +2,39 @@
 
 namespace Dlt\Cli;
 
+use Dlt\Application;
+
 class DevShopCommands extends \Robo\Tasks
 {
 
   protected $dir;
 
   /**
+   * @var \Robo\Config
+   */
+  protected $config;
+
+  function __construct() {
+    $this->dir = Application::getConfigPath();
+  }
+
+  /**
    * Launch a devshop using docker-compose
    *
    * @command up
    */
-  public function up(
-    $dir = NULL
-  )
+  public function up()
   {
+    $this->config = $this->getContainer()->get('config');
+    $projects_path = $this->config->get('projects_path', getenv('HOME') . '/DevShopProjects');
 
-    // Ask what directory to install the docker-compose.yml file in.
-    if (empty($dir)) {
-      $dir = $this->io()->ask('What directory would you like to setup DevShop in?', getenv('HOME') . '/DevShop');
-    }
-
-    $this->dir = $dir;
-
-    $this->io()->text("Setting up DevShop in $dir...");
+    $this->io()->text("Setting up DevShop in {$this->dir}...");
+    $this->io()->text("Using projects path {$projects_path}...");
 
     // Create the directory if it doesn't exist.
     $this->taskFilesystemStack()
-      ->mkdir($dir)
+      ->mkdir($this->dir)
+      ->mkdir($projects_path)
       ->run();
 
     // Write the docker-compose.yml file.
@@ -52,8 +58,9 @@ services:
     volumes:
       - aegir:/var/aegir
       - mysql:/var/lib/mysql
+      - $projects_path:/var/aegir/projects
 YML;
-      file_put_contents($dir . DIRECTORY_SEPARATOR . 'docker-compose.yml', $yml);
+      file_put_contents($this->dir . DIRECTORY_SEPARATOR . 'docker-compose.yml', $yml);
 
       /**
        * @TODO:
@@ -94,6 +101,20 @@ YML;
   public function _exec($cmd) {
     $cmd = "cd $this->dir; $cmd";
     return parent::_exec($cmd);
+  }
+
+  /**
+   * Run docker-compose stop
+   */
+  public function down() {
+    $this->_exec('docker-compose stop');
+  }
+
+  /**
+   * Run docker-compose stop
+   */
+  public function destroy() {
+    $this->_exec('docker-compose kill; docker-compose rm -fv');
   }
 
 

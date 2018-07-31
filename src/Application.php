@@ -13,8 +13,15 @@ class Application
    * Return the path to the config file.
    * @return string
    */
-  static function getConfigFilePath() {
-    return getenv(self::CONFIG_PREFIX . '_CONFIG') ?: getenv('HOME') . '/.dlt/dlt.yml';;
+  static function getConfigFile() {
+    return  getenv(self::CONFIG_PREFIX . '_CONFIG_FILE') ?: self::getConfigPath() . '/dlt.yml';;
   }
 
+  /**
+   * Return the path to the config directory.
+   * @return string
+   */
+  static function getConfigPath() {
+    return getenv(self::CONFIG_PREFIX . '_CONFIG_PATH') ?: getenv('HOME') . '/.dlt';
+  }
 }
