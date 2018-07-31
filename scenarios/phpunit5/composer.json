@@ -1,6 +1,6 @@
 {
-    "name": "opendevshop/dlt",
-    "description": "Template project for PHP libraries.",
+    "name": "devshop/dlt",
+    "description": "DevShop Local Tools",
     "license": "MIT",
     "authors": [
         {
