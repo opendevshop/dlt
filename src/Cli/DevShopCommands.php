@@ -4,44 +4,42 @@ namespace Dlt\Cli;
 
 use Dlt\Application;
 
-class DevShopCommands extends \Robo\Tasks
-{
+class DevShopCommands extends \Robo\Tasks {
 
-  protected $dir;
+    protected $dir;
 
-  /**
-   * @var \Robo\Config
-   */
-  protected $config;
+    /**
+     * @var \Robo\Config
+     */
+    protected $config;
 
-  function __construct() {
-    $this->dir = Application::getConfigPath();
-  }
+    function __construct() {
+        $this->dir = Application::getConfigPath();
+    }
 
-  /**
-   * Launch a devshop using docker-compose
-   *
-   * @command up
-   */
-  public function up()
-  {
-    $this->config = $this->getContainer()->get('config');
-    $projects_path = $this->config->get('projects_path', getenv('HOME') . '/DevShopProjects');
+    /**
+     * Launch a devshop using docker-compose
+     *
+     * @command up
+     */
+    public function up() {
+        $this->config = $this->getContainer()->get('config');
+        $projects_path = $this->config->get('projects_path', getenv('HOME') . '/DevShopProjects');
 
-    $this->io()->text("Setting up DevShop in {$this->dir}...");
-    $this->io()->text("Using projects path {$projects_path}...");
+        $this->io()->text("Setting up DevShop in {$this->dir}...");
+        $this->io()->text("Using projects path {$projects_path}...");
 
-    // Create the directory if it doesn't exist.
-    $this->taskFilesystemStack()
-      ->mkdir($this->dir)
-      ->mkdir($projects_path)
-      ->run();
+        // Create the directory if it doesn't exist.
+        $this->taskFilesystemStack()
+            ->mkdir($this->dir)
+            ->mkdir($projects_path)
+            ->run();
 
-    $user_uid = trim(shell_exec('id -u'));
-    $user_gid = trim(shell_exec('id -g'));
+        $user_uid = trim(shell_exec('id -u'));
+        $user_gid = trim(shell_exec('id -g'));
 
-    // Write the docker-compose.yml file.
-    $yml = <<<YML
+        // Write the docker-compose.yml file.
+        $yml = <<<YML
 version: '2'
 
 volumes:
@@ -70,9 +68,9 @@ services:
       - mysql:/var/lib/mysql
       - $projects_path:/var/aegir/projects
 YML;
-      file_put_contents($this->dir . DIRECTORY_SEPARATOR . 'docker-compose.yml', $yml);
+        file_put_contents($this->dir . DIRECTORY_SEPARATOR . 'docker-compose.yml', $yml);
 
-      $dockerfile = <<<DOCKERFILE
+        $dockerfile = <<<DOCKERFILE
 FROM devshop/server:latest
 USER root
 ARG PROVISION_USER_UID=12345
@@ -85,63 +83,63 @@ RUN /usr/local/bin/set-user-ids \$PROVISION_USER_NAME \$PROVISION_USER_UID \$PRO
 USER \$PROVISION_USER_NAME
 
 DOCKERFILE;
-    file_put_contents($this->dir . DIRECTORY_SEPARATOR . 'Dockerfile.local', $dockerfile);
+        file_put_contents($this->dir . DIRECTORY_SEPARATOR . 'Dockerfile.local', $dockerfile);
 
 
-      /**
-       * @TODO:
-       * - Detect occupied ports and offer to attempt to take them.
-       * - Detect user's UID and build a local devshop/server to match.
-       * - Ask where they would like to store Projects code.
-       * - Write to the dlt.yml file so we don't have to ask what directory every time!
-       */
+        /**
+         * @TODO:
+         * - Detect occupied ports and offer to attempt to take them.
+         * - Detect user's UID and build a local devshop/server to match.
+         * - Ask where they would like to store Projects code.
+         * - Write to the dlt.yml file so we don't have to ask what directory every time!
+         */
 
-      $this->dockerComposeUp();
+        $this->dockerComposeUp();
     }
 
-  /**
-   * Run docker-compose up -d; docker-compose logs -f
-   *
-   * @command docker-compose:up
-   */
-  public function dockerComposeUp() {
-    $this->_exec('docker-compose build --no-cache && docker-compose up -d && docker-compose logs -f');
-  }
+    /**
+     * Run docker-compose up -d; docker-compose logs -f
+     *
+     * @command docker-compose:up
+     */
+    public function dockerComposeUp() {
+        $this->_exec('docker-compose build --no-cache && docker-compose up -d && docker-compose logs -f');
+    }
 
-  /**
-   * Enter a bash shell in the devmaster container.
-   */
-  public function shell() {
-    $process = new \Symfony\Component\Process\Process("docker-compose exec devshop bash");
-    $process->setTty(TRUE);
-    $process->run();
-  }
+    /**
+     * Override _exec to always cd into the devshop directory.
+     *
+     * @param \Robo\Contract\CommandInterface|string $cmd
+     *
+     * @return \Robo\Result
+     */
+    public function _exec($cmd) {
+        $cmd = "cd $this->dir; $cmd";
+        return parent::_exec($cmd);
+    }
 
+    /**
+     * Enter a bash shell in the devmaster container.
+     */
+    public function shell() {
+        $process = new \Symfony\Component\Process\Process("docker-compose exec devshop bash");
+        $process->setTty(TRUE);
+        $process->run();
+    }
 
-  /**
-   * Override _exec to always cd into the devshop directory.
-   * @param \Robo\Contract\CommandInterface|string $cmd
-   *
-   * @return \Robo\Result
-   */
-  public function _exec($cmd) {
-    $cmd = "cd $this->dir; $cmd";
-    return parent::_exec($cmd);
-  }
+    /**
+     * Run docker-compose stop
+     */
+    public function down() {
+        $this->_exec('docker-compose stop');
+    }
 
-  /**
-   * Run docker-compose stop
-   */
-  public function down() {
-    $this->_exec('docker-compose stop');
-  }
-
-  /**
-   * Run docker-compose stop
-   */
-  public function destroy() {
-    $this->_exec('docker-compose kill; docker-compose rm -fv');
-  }
+    /**
+     * Run docker-compose stop
+     */
+    public function destroy() {
+        $this->_exec('docker-compose kill; docker-compose rm -fv');
+    }
 
 
 }
