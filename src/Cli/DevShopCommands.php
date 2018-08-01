@@ -171,6 +171,19 @@ YML;
          * - Write to the dlt.yml file so we don't have to ask what directory every time!
          */
 
+        // Check that the UID is set correctly. If so, don't build
+        exec("docker run -ti --rm --entrypoint id devshop/server:local", $out, $return);
+        if ($return == 0) {
+            $this->_exec(
+                'docker-compose up -d && docker-compose logs -f'
+            );
+        }
+        else {
+            $this->_exec(
+                'docker-compose build --no-cache && docker-compose up -d && docker-compose logs -f'
+            );
+        }
+
         $this->dockerComposeUp();
     }
 
