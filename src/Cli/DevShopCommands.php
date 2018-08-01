@@ -63,6 +63,20 @@ class DevShopCommands extends \Robo\Tasks {
 
         // Write the docker-compose.yml file.
         $yml = <<<YML
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!
+
+# This file is written by DevShop Local Tools every time
+# the up command is run.
+
+# If you wish to alter the docker stack, edit the file 
+# docker-compose.override.yml
+
 version: '2'
 
 volumes:
@@ -89,10 +103,34 @@ services:
       - aegir:/var/aegir
       - mysql:/var/lib/mysql
       - $this->projects_path:/var/aegir/projects
+      
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!
+
 YML;
         file_put_contents($this->dir . DIRECTORY_SEPARATOR . 'docker-compose.yml', $yml);
 
         $dockerfile = <<<DOCKERFILE
+        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!        
+# DO NOT EDIT!
+
+# This file is written by DevShop Local Tools every time
+# the up command is run.
+
+# If you wish to alter the docker stack, edit the file 
+# docker-compose.override.yml
+
 FROM devshop/server:latest
 USER root
 ARG PROVISION_USER_UID=12345
@@ -107,6 +145,23 @@ USER \$PROVISION_USER_NAME
 DOCKERFILE;
         file_put_contents($this->dir . DIRECTORY_SEPARATOR . 'Dockerfile.local', $dockerfile);
 
+        $yml_override = <<<YML
+
+# docker-compose.override.yml
+# Use this file to add more services or customize the dynamic one.
+
+version: '2'
+
+services:
+  node:
+    image: node:8
+
+YML;
+
+        # Write the docker-compose.override.yml file, just once.
+        if (!file_exists($this->dir . DIRECTORY_SEPARATOR . 'docker-compose.override.yml')) {
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . 'docker-compose.override.yml', $yml_override);
+        }
 
         /**
          * @TODO:
