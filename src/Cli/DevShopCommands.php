@@ -23,20 +23,42 @@ class DevShopCommands extends \Robo\Tasks {
      * @command up
      */
     public function up() {
+
+
+        // Run the welcome committee.
+        if (!file_exists($this->dir)) {
+            if ($this->confirm("Hi there. You don't have the DLT config folder. Should I create it? ($this->dir) ")) {
+                $this->taskFilesystemStack()
+                    ->mkdir($this->dir)
+                    ->run()
+                ;
+            }
+            else {
+                throw new \Exception('You must have a DLT config folder to continue.');
+            }
+        }
+
         $this->config = $this->getContainer()->get('config');
-        $projects_path = $this->config->get('projects_path', getenv('HOME') . '/DevShopProjects');
+        $this->projects_path = $this->config->get('projects_path', getenv('HOME') . '/DevShopProjects');
 
-        $this->io()->text("Setting up DevShop in {$this->dir}...");
-        $this->io()->text("Using projects path {$projects_path}...");
+        // Run the welcome committee.
+        if (!file_exists($this->projects_path)) {
+            if ($this->confirm("Hi there. You don't have a Projects folder. Should I create it? ($this->dir) ")) {
+                $this->taskFilesystemStack()
+                    ->mkdir($this->projects_path)
+                    ->run()
+                ;
+            }
+            else {
+                throw new \Exception('You must have a Projects folder to continue.');
+            }
+        }
 
-        // Create the directory if it doesn't exist.
-        $this->taskFilesystemStack()
-            ->mkdir($this->dir)
-            ->mkdir($projects_path)
-            ->run();
+        $this->io()->text("Using projects path {$this->projects_path}...");
 
         $user_uid = trim(shell_exec('id -u'));
         $user_gid = trim(shell_exec('id -g'));
+        $this->io()->text("Detected your UID as $user_uid and your GID $user_gid.");
 
         // Write the docker-compose.yml file.
         $yml = <<<YML
@@ -53,7 +75,6 @@ services:
       context: .
       dockerfile: Dockerfile.local
       args:
-        PROVISION_USER_NAME: provision
         PROVISION_USER_UID: $user_uid
         PROVISION_WEB_UID: $user_gid
     ports:
@@ -66,7 +87,7 @@ services:
     volumes:
       - aegir:/var/aegir
       - mysql:/var/lib/mysql
-      - $projects_path:/var/aegir/projects
+      - $this->projects_path:/var/aegir/projects
 YML;
         file_put_contents($this->dir . DIRECTORY_SEPARATOR . 'docker-compose.yml', $yml);
 
