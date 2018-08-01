@@ -59,6 +59,7 @@ class DevShopCommands extends \Robo\Tasks {
         $user_uid = trim(shell_exec('id -u'));
         $user_gid = trim(shell_exec('id -g'));
         $this->io()->text("Detected your UID as $user_uid and your GID $user_gid.");
+        $this->io()->block('DLT will now attempt to alter the devshop/server container user to match your UID and GID...');
 
         // Write the docker-compose.yml file.
         $yml = <<<YML
