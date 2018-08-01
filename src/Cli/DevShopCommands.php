@@ -61,6 +61,16 @@ class DevShopCommands extends \Robo\Tasks {
         $this->io()->text("Detected your UID as $user_uid and your GID $user_gid.");
         $this->io()->block('DLT will now attempt to alter the devshop/server container user to match your UID and GID...');
 
+        // Detect and map SSH folder
+        $ssh_folder = getenv('HOME')  . '/.ssh';
+        if (file_exists($ssh_folder)) {
+            $volumes = '- ' . $ssh_folder . ':/var/aegir/.ssh';
+            $this->io()->comment("Mapping SSH folder: $ssh_folder");
+        }
+        else {
+            $this->io()->warning("SSH config folder not found. Not mapping host .ssh folder. ($ssh_folder)");
+        }
+
         // Write the docker-compose.yml file.
         $yml = <<<YML
 # DO NOT EDIT!        
@@ -103,6 +113,7 @@ services:
       - aegir:/var/aegir
       - mysql:/var/lib/mysql
       - $this->projects_path:/var/aegir/projects
+      $volumes
       
 # DO NOT EDIT!        
 # DO NOT EDIT!        
