@@ -152,9 +152,9 @@ DOCKERFILE;
 
 version: '2'
 
-services:
-  node:
-    image: node:8
+# services:
+  # node:
+    #image: node:8
 
 YML;
 
