@@ -22,6 +22,6 @@ class Application
    * @return string
    */
   static function getConfigPath() {
-    return getenv(self::CONFIG_PREFIX . '_CONFIG_PATH') ?: getenv('HOME') . '/.dlt';
+    return getenv(self::CONFIG_PREFIX . '_CONFIG_PATH') ?: getenv('HOME') . '/.dlt/';
   }
 }

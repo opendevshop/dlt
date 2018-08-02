@@ -25,7 +25,7 @@ class ExampleCommandsTest extends TestCase
     public function setUp()
     {
         // Store the command classes we are going to test
-        $this->commandClasses = [ \Dlt\Cli\ExampleCommands::class ];
+        $this->commandClasses = [ \Dlt\Cli\DevShopCommands::class ];
 
         // Define our invariants for our test
         $this->appName = 'TestFixtureApp';
